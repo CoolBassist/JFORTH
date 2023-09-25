@@ -189,6 +189,14 @@ bool evaluate(std::vector<Token> tokens){
             int b = stack.top();
             stack.pop();
             stack.push(b%a);
+        }else if(t.get_string() == "SWAP"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(a);
+            stack.push(b);
         }else if(t.get_string() == ">"){
             if(check_stack_size(2)) return true;
             int a = stack.top();
@@ -217,13 +225,30 @@ bool evaluate(std::vector<Token> tokens){
             int b = stack.top();
             stack.pop();
             stack.push(b <= a ? 1 : 0);
-        }else if(t.get_string() == "=="){
+        }else if(t.get_string() == "="){
             if(check_stack_size(2)) return true;
             int a = stack.top();
             stack.pop();
             int b = stack.top();
             stack.pop();
             stack.push(b == a ? 1 : 0);
+        }else if(t.get_string() == "<>"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b != a ? 1 : 0);
+        }else if(t.get_string() == "0>"){
+            if(check_stack_size(1)) return true;
+            int a = stack.top();
+            stack.pop();
+            stack.push(a < 0 ? 1 : 0);
+        }else if(t.get_string() == "0<"){
+            if(check_stack_size(1)) return true;
+            int a = stack.top();
+            stack.pop();
+            stack.push(a > 0 ? 1 : 0);
         }else{
             if (function_map.find(t.get_string()) == function_map.end()) {
                 std::cout << "Cannot find '" << t.get_string() << "' in function defintions.\n";
