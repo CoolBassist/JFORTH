@@ -3,14 +3,13 @@ A simple one-file interpreter for a custom FORTH language.
 
 ```
 >>> 3 4 6 + * .
-30 ok
+30 :)
 >>> : DOUBLE DUP DUP + ;
-Function definition for 'DOUBLE' created.
-ok
+Function definition for 'DOUBLE' created. :)
 >>> 30 DOUBLE .
-60 ok
+60 :)
 >>> 3 4 > IF 10 . ELSE 14 . THEN
-14 ok
+14 :)
 ```
 
 
@@ -22,7 +21,7 @@ There are only two types of tokens in the language, symbols, and numbers. Symbol
 ## Example
 ```
 >>> 3 4 6 + * .
-30 ok
+30 :)
 ```
 
 Explanation: First 3, 4, and 6 are pushed onto the stack. The `+` pops the two most recent numbers on the stack (the 4 and 6), adds them together and pushes `10` back onto the stack. The `*` pops the two most recent numbers on the stack, `10` and `3`, multiplies them and pushes `30` back onto the stack. Then finally `.` simply outputs the top of the stack.
@@ -36,10 +35,13 @@ CR | Outputs a new line character.
 . | Ouputs the number on top of the stack.
 \+ \- \* \/ | Pops two numbers off the stack and pushes the result.
 DUP | Takes the number on top of the stack, and pushes it again.
-\> \< \>= \<= | Pops the two numbers on top of the stack, pushes 1 if true, 0 if false.
-IF | If the number on top of the stack is a non-zero number, proceed as normal. Else skip ahead to an ELSE token.
+DROP | Discards the number on top of the stack.
+\=\= \> \< \>= \<= | Pops the two numbers on top of the stack, pushes 1 if true, 0 if false.
+IF | If the number on top of the stack is a non-zero number, proceed as normal. Else skip ahead to an ELSE or THEN token.
 ELSE | Skip ahead to a THEN token.
 THEN | Do nothing.
+
+A string has the following syntax `."Hello, world!"`. When a string is encountered it will instantly print to the console.
 
 ### Writing functions
 Function definitions have the following syntax
