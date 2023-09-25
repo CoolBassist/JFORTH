@@ -44,7 +44,9 @@ CR | Outputs a new line character.
 \+ \- \* \/ | Pops two numbers off the stack and pushes the result.
 DUP | Takes the number on top of the stack, and pushes it again.
 DROP | Discards the number on top of the stack.
-\=\= \> \< \>= \<= | Pops the two numbers on top of the stack, pushes 1 if true, 0 if false.
+\=\= \> \< \>= \<= \<\> | Pops the two numbers on top of the stack, pushes 1 if true, 0 if false.
+0\< 0\> | Compares the top of the stack with 0, pushes 1 if true, 0 if false.
+SWAP | Swaps the two numbers on top of the stack.
 IF | If the number on top of the stack is a non-zero number, proceed as normal. Else skip ahead to an ELSE or THEN token.
 ELSE | Skip ahead to a THEN token.
 THEN | Do nothing.
