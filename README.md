@@ -18,13 +18,21 @@ JFORTH is a language that is an imperative stack-based language that is ran via 
 
 There are only two types of tokens in the language, symbols, and numbers. Symbols (called "words" in typical FORTH) are your typical functions, they *do stuff*. Numbers are just numbers. When numbers are encountered they are simply pushed onto the stack. When symbols are encountered, the interpreter first checks if the symbol is a built in, such as `CR` (carriage return), `.` (print), `DUP` (duplicate the top of the stack), etc. if it is not a built in, it then checks the user defined functions.
 
-## Example
+## Examples
 ```
 >>> 3 4 6 + * .
 30 :)
 ```
 
 Explanation: First 3, 4, and 6 are pushed onto the stack. The `+` pops the two most recent numbers on the stack (the 4 and 6), adds them together and pushes `10` back onto the stack. The `*` pops the two most recent numbers on the stack, `10` and `3`, multiplies them and pushes `30` back onto the stack. Then finally `.` simply outputs the top of the stack.
+
+```
+>>> : FAC DUP 1 <> IF DUP 1 - FAC * THEN ;
+Function definition for 'FAC' created. :)
+>>> 5 FAC .
+120 :)
+```
+Recursive factorial function.
 
 ## Documentation
 
