@@ -32,6 +32,8 @@ struct Token{
     }
 };
 
+
+
 int lex_number(size_t* p, std::string input){
     std::string t = "";
 
@@ -45,8 +47,12 @@ int lex_number(size_t* p, std::string input){
 
 std::string lex_symbol(size_t* p, std::string input){
     std::string t = "";
+    bool in_string = false;
 
-    while(input[*p] != ' ' && input[*p] != '\t' && input[*p] != '\r' && input[*p] != '\n' && (*p) < input.size()){
+    while((*p) < input.size() && ((input[*p] != ' ' && input[*p] != '\t' && input[*p] != '\r' && input[*p] != '\n') || in_string)){
+        if(input[*p] == '"'){
+            in_string = !in_string;
+        }
         t += input[*p];
         (*p)++;
     }
@@ -74,18 +80,27 @@ std::vector<Token> lex_input(std::string input){
     return tokens;
 }
 
-
 std::stack<int> stack;
 std::unordered_map<std::string, std::vector<Token>> function_map;
 
-void evaluate(std::vector<Token> tokens){
+bool check_stack_size(size_t size){
+    if(stack.size() < size){
+        std::cout << "\033[31m" << "expected at least " << size << " number" << (size==1? "" : "s") << " on stack " << "\033[0m";
+        return true;
+    }
+
+    return false;
+}
+
+bool evaluate(std::vector<Token> tokens){
     if(tokens[0].type == SYMBOL && tokens[0].get_string() == ":"){
         if(tokens[1].type == SYMBOL && tokens.back().type == SYMBOL && tokens.back().get_string() == ";"){
             function_map[tokens[1].get_string()] = std::vector<Token>(tokens.begin()+2, tokens.end()-1);
-            std::cout << "Function definition for '" << tokens[1].get_string() << "' created.\n";
-            return;
+            std::cout << "\033[32m" << "Function definition for '" << tokens[1].get_string() << "' created. " << "\033[0m";
+            return false;
         }
-        return;
+        std::cout << "\033[31m" << "Incomplete function definition ";
+        return true;
     }
 
     size_t p = 0;
@@ -101,68 +116,28 @@ void evaluate(std::vector<Token> tokens){
 
         if(t.get_string() == "CR"){
             std::cout << std::endl;
-        }else if(t.get_string() == "."){
-            std::cout << stack.top() << " ";
-        }else if(t.get_string() == "+"){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b+a);
-        }else if(t.get_string() == "-"){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b-a);
-        }else if(t.get_string() == "*"){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b*a);
-        }else if(t.get_string() == "/"){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b/a);
-        }else if(t.get_string() == "DUP"){
-            stack.push(stack.top());
-        }else if(t.get_string() == ">"){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b > a ? 1 : 0);
-        }else if(t.get_string() == "<"){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b < a ? 1 : 0);
-        }else if(t.get_string() == ">="){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b >= a ? 1 : 0);
-        }else if(t.get_string() == "<="){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b <= a ? 1 : 0);
-        }else if(t.get_string() == "=="){
-            int a = stack.top();
-            stack.pop();
-            int b = stack.top();
-            stack.pop();
-            stack.push(b == a ? 1 : 0);
+        }else if(t.get_string()[0] == '.'){
+            if(t.get_string().size() > 1){
+                if(t.get_string()[1] != '"' && t.get_string()[t.get_string().size()-1] != '"'){
+                    std::cout << "\033[31m" << "Incomplete string " << "\033[0m";
+                    return true;
+                }else{
+                    for(size_t i = 2; i < t.get_string().size()-1; i++){
+                        std::cout << t.get_string()[i];
+                    }
+                }
+            }else{
+                if(check_stack_size(1)) return true;
+                std::cout << stack.top() << " ";
+            }
+            
         }else if(t.get_string() == "IF"){
-            int boolean = stack.top();
+            if(check_stack_size(1)) return true;
 
-            while(!boolean && (t.type == NUMBER || t.get_string() != "ELSE")){
+            int boolean = stack.top();
+            stack.pop();
+
+            while(!boolean && (t.type == NUMBER || (t.get_string() != "ELSE" && t.get_string() != "THEN"))){
                 p++;
                 t = tokens[p];
             }
@@ -173,9 +148,86 @@ void evaluate(std::vector<Token> tokens){
             }
         }else if(t.get_string() == "THEN"){
             // do nothing
+        }else if(t.get_string() == "DUP"){
+            if(check_stack_size(1)) return true;
+            stack.push(stack.top());
+        }else if(t.get_string() == "DROP"){
+            if(check_stack_size(1)) return true;
+            stack.pop();
+        }else if(t.get_string() == "+"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b+a);
+        }else if(t.get_string() == "-"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b-a);
+        }else if(t.get_string() == "*"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b*a);
+        }else if(t.get_string() == "/"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b/a);
+        }else if(t.get_string() == "MOD"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b%a);
+        }else if(t.get_string() == ">"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b > a ? 1 : 0);
+        }else if(t.get_string() == "<"){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b < a ? 1 : 0);
+        }else if(t.get_string() == ">="){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b >= a ? 1 : 0);
+        }else if(t.get_string() == "<="){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b <= a ? 1 : 0);
+        }else if(t.get_string() == "=="){
+            if(check_stack_size(2)) return true;
+            int a = stack.top();
+            stack.pop();
+            int b = stack.top();
+            stack.pop();
+            stack.push(b == a ? 1 : 0);
         }else{
             if (function_map.find(t.get_string()) == function_map.end()) {
                 std::cout << "Cannot find '" << t.get_string() << "' in function defintions.\n";
+                return true;
             } else {
                 evaluate(function_map[t.get_string()]);
             }
@@ -183,18 +235,31 @@ void evaluate(std::vector<Token> tokens){
 
         p++;
     }
+
+    return false;
 }
 
 int main(){
     std::string input = "";
 
-    while(input != "exit"){
+    while(true){
         std::cout << "\033[32m" << ">>> " << "\033[0m";
         std::getline(std::cin, input);
 
+        if(input == "exit"){
+            break;
+        }
+
         std::vector<Token> tokens = lex_input(input);
 
-        evaluate(tokens);
-        std::cout << "\033[1m\033[32m" << "ok" << "\033[0m" << "\n";
+
+        if(evaluate(tokens)){
+            std::cout << "\033[1m\033[31m" << ":(";
+        }else{
+            std::cout << "\033[1m\033[32m" << ":)";
+        }
+        
+        
+        std::cout << "\033[0m" << "\n";
     }
 }
