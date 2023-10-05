@@ -9,7 +9,7 @@ Function definition for 'DOUBLE' created. :)
 >>> 30 DOUBLE .
 60 :)
 >>> 3 4 > IF ."3 > 4 " ELSE ."3 <= 4 " THEN
-3 > 4 :)
+3 <= 4 :)
 ```
 
 ## Implementations
