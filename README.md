@@ -8,8 +8,8 @@ A simple one-file interpreter for a custom FORTH language.
 Function definition for 'DOUBLE' created. :)
 >>> 30 DOUBLE .
 60 :)
->>> 3 4 > IF 10 . ELSE 14 . THEN
-14 :)
+>>> 3 4 > IF ."3 > 4 " ELSE ."3 <= 4 " THEN
+3 > 4 :)
 ```
 
 ## Implementations
